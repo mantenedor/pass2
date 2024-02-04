@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu Principal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #333; /* Cor de fundo escura */
+      color: #fff; /* Cor do texto branca */
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #555; /* Cor de fundo escura */
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      background-color: #4caf50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px;
+      transition: background-color 0.3s;
+    }
+
+    .button:hover {
+      background-color: #45a049;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>O que você sabe? O que você tem?</h2>
+
+  <div class="input-group">
+    <label for="chave">Chave:</label>
+    <input type="text" id="chave" placeholder="Digite a chave">
+  </div>
+
+  <a href="in.html" class="button" id="cadastrarButton">CADASTRAR</a>
+  <a href="list.html" class="button" id="consultarButton">CONSULTAR</a>
+</div>
+
+<script>
+  // Adicionar um listener ao carregar a página
+  document.addEventListener('DOMContentLoaded', function () {
+    // Adicionar um listener ao botão "CADASTRAR"
+    document.getElementById('cadastrarButton').addEventListener('click', function () {
+      // Obter a chave inserida
+      const chave = document.getElementById('chave').value;
+
+      // Redirecionar para in.html passando a chave como parâmetro
+      this.href = `in.html?key=${chave}`;
+    });
+
+    // Adicionar um listener ao botão "CONSULTAR"
+    document.getElementById('consultarButton').addEventListener('click', function () {
+      // Obter a chave inserida
+      const chave = document.getElementById('chave').value;
+
+      // Redirecionar para list.html passando a chave como parâmetro
+      this.href = `list.html?key=${chave}`;
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Listar e Descriptografar CSV</title>
+  <!-- Referência local para a biblioteca aes-js -->
+  <script src="js/aes.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #292b2c; /* Cor de fundo escura */
+      color: #fff; /* Cor do texto branca */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      background-color: #333; /* Cor de fundo do cabeçalho */
+      padding: 10px;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header button {
+      background-color: #4caf50;
+      color: #fff;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    header button:hover {
+      background-color: #45a049;
+    }
+
+    input, button {
+      margin: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd; /* Cor da borda mais escura */
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #333; /* Cor de fundo escura para o cabeçalho */
+      color: #fff; /* Cor do texto branca */
+    }
+
+    button {
+      background-color: #4caf50;
+      color: #fff;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <button onclick="goToIndex()">Voltar</button>
+  <div>
+    <input type="text" id="searchInput" placeholder="Buscar por URL/IP, Hostname, Usuário, Senha, Nota...">
+    <button onclick="listAndDecryptCSV()">Listar e Descriptografar CSV</button>
+  </div>
+</header>
+
+<table id="csvTable"></table>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const encryptionKey = urlParams.get('key') || 'chave_padrão';
+
+  async function listAndDecryptCSV() {
+    try {
+      // Solicitar acesso ao sistema de arquivos local
+      const fs = await window.showDirectoryPicker();
+
+      // Abrir o arquivo CSV existente
+      const fileHandle = await fs.getFileHandle('dados.csv');
+
+      // Obter o conteúdo do arquivo
+      const fileContent = await readFile(fileHandle);
+
+      // Dividir o conteúdo em linhas
+      const lines = fileContent.split('\n');
+
+      // Criar uma tabela HTML
+      const table = document.getElementById('csvTable');
+      table.innerHTML = ''; // Limpar a tabela
+
+      // Adicionar uma linha de cabeçalho à tabela
+      const headerRow = ['URL/IP', 'HOSTNAME', 'USUÁRIO', 'SENHA', 'NOTA'];
+      const header = table.createTHead();
+      const headerRowElement = header.insertRow();
+      headerRow.forEach(columnName => {
+        const th = document.createElement('th');
+        th.textContent = columnName;
+        headerRowElement.appendChild(th);
+      });
+
+      // Iterar sobre as linhas do arquivo
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i];
+
+        if (line.trim() !== '') {
+          // Dividir cada linha nos campos
+          const fields = line.split(';');
+
+          // Descriptografar cada campo
+          const decryptedFields = fields.map(decryptString);
+
+          // Adicionar uma linha à tabela
+          const row = table.insertRow();
+          decryptedFields.forEach(field => {
+            const cell = row.insertCell();
+            cell.textContent = field;
+          });
+        }
+      }
+
+      // Adicionar evento de tecla para atualizar os resultados da pesquisa
+      document.getElementById('searchInput').addEventListener('keyup', filterResults);
+
+    } catch (error) {
+      console.error('Erro ao listar e descriptografar o arquivo CSV:', error);
+      alert('Erro ao listar e descriptografar o arquivo CSV. Consulte o console para obter mais detalhes.');
+    }
+  }
+
+  function filterResults() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toUpperCase();
+    const table = document.getElementById('csvTable');
+    const rows = table.getElementsByTagName('tr');
+
+    for (let i = 1; i < rows.length; i++) {
+      let shouldDisplay = false;
+      const cells = rows[i].getElementsByTagName('td');
+
+      for (let j = 0; j < cells.length; j++) {
+        const cellText = cells[j].textContent || cells[j].innerText;
+
+        if (cellText.toUpperCase().indexOf(filter) > -1) {
+          shouldDisplay = true;
+          break;
+        }
+      }
+
+      rows[i].style.display = shouldDisplay ? '' : 'none';
+    }
+  }
+
+  async function readFile(fileHandle) {
+    const file = await fileHandle.getFile();
+    const content = await file.text();
+    return content;
+  }
+
+  function decryptString(encryptedText) {
+    const keyBytes = aesjs.utils.utf8.toBytes(encryptionKey);
+    const keyBytesPadded = aesjs.padding.pkcs7.pad(keyBytes);
+    const aesCtr = new aesjs.ModeOfOperation.ctr(keyBytesPadded, new aesjs.Counter(5));
+
+    const encryptedBytes = aesjs.utils.hex.toBytes(encryptedText);
+    const decryptedBytes = aesCtr.decrypt(encryptedBytes);
+
+    const decryptedText = aesjs.utils.utf8.fromBytes(decryptedBytes);
+
+    return decryptedText;
+  }
+
+  function goToIndex() {
+    window.location.href = 'index.html';
+  }
+</script>
+
+</body>
+</html>
